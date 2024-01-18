@@ -1,64 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using TestTask.Classes;
 
 namespace TestTask
 {
     public partial class MainWindow : Window
     {
-        private static int n = 15; //количество строк и столбцов
-        private Button[,] buttons = new Button[n, n];
-        private Dictionary<Button, List<Button>> graph = new Dictionary<Button, List<Button>>();
+        private static int count = 50; //количество строк и столбцов
+        private Button[,] buttons = new Button[count, count];
+        private Graph graph;
+        private Classes.Point[,] points;
 
         public MainWindow()
         {
             InitializeComponent();
-            GeneratedMap();
+            Map map = new Map();
+            points = map.GeneratedMap(count);
+            points = map.SetObstacles(points, count * count / 3);
+            graph = map.InitializeGraph(points);
+            DrawGrid();
         }
 
-        private void GeneratedMap()
+        private void DrawGrid()
         {
-            //создание клеток
-            for (int i = 0; i < n; i++)
+            for (int x = 0; x < count; x++)
             {
                 mainGrid.ColumnDefinitions.Add(new ColumnDefinition());
                 mainGrid.RowDefinitions.Add(new RowDefinition());
-                for (int j = 0; j < n; j++)
+                for (int y = 0; y < count; y++)
                 {
                     Button button = new Button();
+                    if (points[x, y].IsObstacle)
+                        button.Background = Brushes.Black;
                     button.Click += Button_Click;
-                    Grid.SetColumn(button, i);
-                    Grid.SetRow(button, j);
+                    Grid.SetColumn(button, x);
+                    Grid.SetRow(button, y);
                     mainGrid.Children.Add(button);
-                    buttons[i, j] = button;
-                }
-            }
-            for (int i = 0; i < n * n / 3; i++)
-            {
-                Random random = new Random();
-                buttons[random.Next(0, n), random.Next(0, n)].Background = Brushes.Black;
-            }
-            for (int i = 0; i < n; i++)
-            {
-                for (int j = 0; j < n; j++)
-                {
-                    List<Button> neighbors = new List<Button>();
-                    if (j + 1 >= 0 && j < n - 1)
-                        if (buttons[i, j + 1].Background != Brushes.Black)
-                            neighbors.Add(buttons[i, j + 1]);
-                    if (j - 1 >= 0 && j < n - 1)
-                        if (buttons[i, j - 1].Background != Brushes.Black)
-                            neighbors.Add(buttons[i, j - 1]);
-                    if (i + 1 >= 0 && i < n - 1)
-                        if (buttons[i + 1, j].Background != Brushes.Black)
-                            neighbors.Add(buttons[i + 1, j]);
-                    if (i - 1 >= 0 && i < n - 1)
-                        if (buttons[i - 1, j].Background != Brushes.Black)
-                            neighbors.Add(buttons[i - 1, j]);
-
-                    graph.Add(buttons[i, j], neighbors);
+                    buttons[x, y] = button;
                 }
             }
         }
@@ -67,62 +47,56 @@ namespace TestTask
         {
             Button buttonEnd = (Button)sender;
 
-            Button startPoint = buttons[0, 0];
-            Button endPoint = buttonEnd;
+            Classes.Point startPoint = new Classes.Point(new Vector2(0, 0));
+            Classes.Point endPoint = new Classes.Point(GetPositionButton(buttonEnd));
 
-            Dictionary<Button, Button> visited = BFS(startPoint, endPoint);
-            DrawWay(visited, startPoint, endPoint);
+            Searching(startPoint, endPoint);
         }
 
-        private Dictionary<Button, Button> BFS(Button startPoint, Button endPoint)
+        private void Searching(Classes.Point startPoint, Classes.Point endPoint)
         {
-            Queue<Button> queue = new Queue<Button>();
-            queue.Enqueue(startPoint);
+            GridPathfinder gridPathfinder = new GridPathfinder();
 
-            Dictionary<Button, Button> visited = new Dictionary<Button, Button>();
-
-            while (queue.Count > 0)
+            Path path = gridPathfinder.BFS(startPoint, endPoint, graph);
+            if (path != null)
             {
-                Button curNode = queue.Dequeue();
-                if (curNode == endPoint)
-                    return visited;
-
-                List<Button> nextNodes = graph[curNode];
-                foreach (Button nextNode in nextNodes)
-                {
-                    if (!visited.ContainsKey(nextNode))
-                    {
-                        queue.Enqueue(nextNode);
-                        visited[nextNode] = curNode;
-                    }
-                }
+                DrawWay(path, startPoint, endPoint);
             }
-
-            return null;
+            else MessageBox.Show("Пути нет");
         }
 
-        private void DrawWay(Dictionary<Button, Button> visited, Button startPoint, Button endPoint)
+        private void DrawWay(Path path, Classes.Point startPoint, Classes.Point endPoint)
         {
-            if (visited != null)
+            foreach (var point in path.WayPoints)
             {
-                Button curNode = endPoint;
-                while (curNode != startPoint)
-                {
-                    curNode = visited[curNode];
-                    SetColor(curNode, Brushes.Green);
-                }
-                SetColor(endPoint, Brushes.GreenYellow);
-                SetColor(startPoint, Brushes.DarkSeaGreen);
+                SetColor(GetButton(point), Brushes.Green);
             }
-            else
-            {
-                MessageBox.Show("Пути нет");
-            }
+
+            SetColor(GetButton(endPoint), Brushes.GreenYellow);
+            SetColor(GetButton(startPoint), Brushes.DarkSeaGreen);
         }
 
         private void SetColor(Button button, SolidColorBrush color)
         {
             button.Background = color;
+        }
+
+        private Button GetButton(Classes.Point point)
+        {
+            return buttons[(int)point.Position.X, (int)point.Position.Y];
+        }
+
+        private Vector2 GetPositionButton(Button buttonEnd)
+        {
+            for (int x = 0; x < count; x++)
+            {
+                for (int y = 0; y < count; y++)
+                {
+                    if (buttons[x, y] == buttonEnd) 
+                        return new Vector2(x, y);
+                }
+            }
+            return new Vector2(0, 0);
         }
     }
 }

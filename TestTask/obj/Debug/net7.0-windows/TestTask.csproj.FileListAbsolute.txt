@@ -6,7 +6,6 @@ E:\Yandex Disk\YandexDisk\prodaction\GitHub\TestTask\TestTask\bin\Debug\net7.0-w
 E:\Yandex Disk\YandexDisk\prodaction\GitHub\TestTask\TestTask\obj\Debug\net7.0-windows\MainWindow.g.cs
 E:\Yandex Disk\YandexDisk\prodaction\GitHub\TestTask\TestTask\obj\Debug\net7.0-windows\App.g.cs
 E:\Yandex Disk\YandexDisk\prodaction\GitHub\TestTask\TestTask\obj\Debug\net7.0-windows\TestTask_MarkupCompile.cache
-E:\Yandex Disk\YandexDisk\prodaction\GitHub\TestTask\TestTask\obj\Debug\net7.0-windows\TestTask_MarkupCompile.lref
 E:\Yandex Disk\YandexDisk\prodaction\GitHub\TestTask\TestTask\obj\Debug\net7.0-windows\MainWindow.baml
 E:\Yandex Disk\YandexDisk\prodaction\GitHub\TestTask\TestTask\obj\Debug\net7.0-windows\TestTask.g.resources
 E:\Yandex Disk\YandexDisk\prodaction\GitHub\TestTask\TestTask\obj\Debug\net7.0-windows\TestTask.GeneratedMSBuildEditorConfig.editorconfig
